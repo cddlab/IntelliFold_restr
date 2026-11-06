@@ -157,3 +157,19 @@ def test_sampler_preserves_finite_coordinates_and_rgi_order(
     # Last-step Euler with unit scale approaches the corrected denoised coordinates.
     expected = 8.0 if use_rgi else (2.0 if steering else 0.0)
     np.testing.assert_allclose(result["atom_positions"], expected, atol=0.02)
+
+
+@pytest.mark.parametrize("kind", ["protein", "rna", "dna", "ligand"])
+def test_identical_molecules_keep_independent_opt_ins(kind):
+    data = json.loads(fold_input().to_json())
+    entity = next(seq[kind] for seq in data["sequences"] if kind in seq)
+    data["sequences"] = [
+        {kind: {**entity, "id": "A", "conformer_restraints": True}},
+        {kind: {**entity, "id": "B", "conformer_restraints": False}},
+    ]
+    original = folding_input.Input.from_json(json.dumps(data))
+    restored = folding_input.Input.from_json(original.to_json())
+    assert [(c.id, c.conformer_restraints) for c in restored.chains] == [
+        ("A", True),
+        ("B", False),
+    ]

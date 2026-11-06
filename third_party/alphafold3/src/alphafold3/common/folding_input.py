@@ -889,9 +889,6 @@ class Ligand:
   ccd_ids: Sequence[str] | None = None
   smiles: str | None = None
   description: str | None = None
-  # Opt-in: a ligand applies conformer restraints only when it explicitly sets
-  # conformer_restraints:true (the per-ligand flag contract shared with
-  # boltz/protenix; absent flag -> no conformer restraints for that ligand).
   conformer_restraints: bool = False
 
   def __post_init__(self):
@@ -915,7 +912,7 @@ class Ligand:
 
   def hash_without_id(self) -> int:
     """Returns a hash ignoring the ID - useful for deduplication."""
-    return hash((self.ccd_ids, self.smiles, self.description))
+    return hash((self.ccd_ids, self.smiles, self.description, self.conformer_restraints))
 
   @classmethod
   def from_alphafoldserver_dict(
