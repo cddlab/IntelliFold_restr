@@ -314,6 +314,7 @@ def sample(
     key: jnp.ndarray,
     config: SampleConfig,
     steering: dict[str, jnp.ndarray] | None = None,
+    restraints=None,
 ) -> dict[str, jnp.ndarray]:
   """Sample using denoiser on batch.
 
@@ -357,7 +358,9 @@ def sample(
     gamma = config.gamma_0 * (noise_level > config.gamma_min)
     t_hat = noise_level_prev * (1 + gamma)
 
-    noise_scale = config.noise_scale * jnp.sqrt(t_hat**2 - noise_level_prev**2)
+    # Guard cancellation when churn is zero.
+    noise_variance = jnp.maximum(t_hat**2 - noise_level_prev**2, 0.0)
+    noise_scale = config.noise_scale * jnp.sqrt(noise_variance)
     noise = noise_scale * jax.random.normal(key_noise, positions.shape)
     positions_noisy = positions + noise
 
@@ -377,6 +380,12 @@ def sample(
           num_gd_steps=config.steering_num_gd_steps,
           weight_scale=config.steering_weight_scale,
           groups=steering_groups,
+      )
+
+    # Compose native steering with RGI at the pre-churn schedule sigma.
+    if restraints is not None:
+      positions_denoised = restraints.minimize_gpu(
+          positions_denoised, noise_level_prev, step_idx
       )
 
     grad = (positions_noisy - positions_denoised) / t_hat

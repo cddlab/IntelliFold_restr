@@ -8,3 +8,12 @@ dist
 *.ninja*
 *.pickle
 logs/
+
+# Reproducible environments and inference artifacts
+.venv/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/
+/model_v2/
+/results/
+/data/

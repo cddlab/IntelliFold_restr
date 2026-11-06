@@ -142,6 +142,7 @@ class ProteinChain:
       '_paired_msa',
       '_unpaired_msa',
       '_templates',
+      '_conformer_restraints',
   )
 
   def __init__(
@@ -154,6 +155,7 @@ class ProteinChain:
       paired_msa: str | None = None,
       unpaired_msa: str | None = None,
       templates: Sequence[Template] | None = None,
+      conformer_restraints: bool = False,
   ):
     """Initializes a single protein chain input.
 
@@ -193,6 +195,7 @@ class ProteinChain:
     self._paired_msa = paired_msa
     self._unpaired_msa = unpaired_msa
     self._templates = tuple(templates) if templates is not None else None
+    self._conformer_restraints = bool(conformer_restraints)
 
   @property
   def id(self) -> str:
@@ -229,6 +232,10 @@ class ProteinChain:
   def templates(self) -> Sequence[Template] | None:
     return self._templates
 
+  @property
+  def conformer_restraints(self) -> bool:
+    return self._conformer_restraints
+
   def __len__(self) -> int:
     return len(self._sequence)
 
@@ -243,6 +250,7 @@ class ProteinChain:
         and self._paired_msa == other._paired_msa
         and self._unpaired_msa == other._unpaired_msa
         and self._templates == other._templates
+        and self._conformer_restraints == other._conformer_restraints
     )
 
   def __hash__(self) -> int:
@@ -254,6 +262,7 @@ class ProteinChain:
         self._paired_msa,
         self._unpaired_msa,
         self._templates,
+        self._conformer_restraints,
     ))
 
   def hash_without_id(self) -> int:
@@ -265,6 +274,7 @@ class ProteinChain:
         self._paired_msa,
         self._unpaired_msa,
         self._templates,
+        self._conformer_restraints,
     ))
 
   @classmethod
@@ -328,6 +338,7 @@ class ProteinChain:
             'pairedMsa',
             'pairedMsaPath',
             'templates',
+            'conformer_restraints',
         },
     )
 
@@ -397,6 +408,7 @@ class ProteinChain:
         paired_msa=paired_msa,
         unpaired_msa=unpaired_msa,
         templates=templates,
+        conformer_restraints=bool(json_dict.get('conformer_restraints', False)),
     )
 
   def to_dict(
@@ -428,6 +440,8 @@ class ProteinChain:
     }
     if self._description is not None:
       contents['description'] = self._description
+    if self._conformer_restraints:
+      contents['conformer_restraints'] = True
     return {'protein': contents}
 
   def to_ccd_sequence(self) -> Sequence[str]:
@@ -450,6 +464,7 @@ class ProteinChain:
         unpaired_msa=self._unpaired_msa or '',
         paired_msa=self._paired_msa or '',
         templates=self._templates or [],
+        conformer_restraints=self._conformer_restraints,
     )
 
 
@@ -462,6 +477,7 @@ class RnaChain:
       '_modifications',
       '_description',
       '_unpaired_msa',
+      '_conformer_restraints',
   )
 
   def __init__(
@@ -472,6 +488,7 @@ class RnaChain:
       modifications: Sequence[tuple[str, int]],
       description: str | None = None,
       unpaired_msa: str | None = None,
+      conformer_restraints: bool = False,
   ):
     """Initializes a single strand RNA chain input.
 
@@ -502,6 +519,7 @@ class RnaChain:
     self._modifications = tuple(modifications)
     self._description = description
     self._unpaired_msa = unpaired_msa
+    self._conformer_restraints = bool(conformer_restraints)
 
   @property
   def id(self) -> str:
@@ -530,6 +548,10 @@ class RnaChain:
   def unpaired_msa(self) -> str | None:
     return self._unpaired_msa
 
+  @property
+  def conformer_restraints(self) -> bool:
+    return self._conformer_restraints
+
   def __len__(self) -> int:
     return len(self._sequence)
 
@@ -542,6 +564,7 @@ class RnaChain:
         and self._modifications == other._modifications
         and self._description == other._description
         and self._unpaired_msa == other._unpaired_msa
+        and self._conformer_restraints == other._conformer_restraints
     )
 
   def __hash__(self) -> int:
@@ -551,6 +574,7 @@ class RnaChain:
         self._modifications,
         self._description,
         self._unpaired_msa,
+        self._conformer_restraints,
     ))
 
   def hash_without_id(self) -> int:
@@ -560,6 +584,7 @@ class RnaChain:
         self._modifications,
         self._description,
         self._unpaired_msa,
+        self._conformer_restraints,
     ))
 
   @classmethod
@@ -593,6 +618,7 @@ class RnaChain:
             'description',
             'unpairedMsa',
             'unpairedMsaPath',
+            'conformer_restraints',
         },
     )
     sequence = json_dict['sequence']
@@ -622,6 +648,7 @@ class RnaChain:
         modifications=modifications,
         description=json_dict.get('description', None),
         unpaired_msa=unpaired_msa,
+        conformer_restraints=bool(json_dict.get('conformer_restraints', False)),
     )
 
   def to_dict(
@@ -639,6 +666,8 @@ class RnaChain:
     }
     if self._description is not None:
       contents['description'] = self._description
+    if self._conformer_restraints:
+      contents['conformer_restraints'] = True
     return {'rna': contents}
 
   def to_ccd_sequence(self) -> Sequence[str]:
@@ -659,13 +688,20 @@ class RnaChain:
         modifications=self.modifications,
         description=self.description,
         unpaired_msa=self._unpaired_msa or '',
+        conformer_restraints=self._conformer_restraints,
     )
 
 
 class DnaChain:
   """Single strand DNA chain input."""
 
-  __slots__ = ('_id', '_sequence', '_modifications', '_description')
+  __slots__ = (
+      '_id',
+      '_sequence',
+      '_modifications',
+      '_description',
+      '_conformer_restraints',
+  )
 
   def __init__(
       self,
@@ -674,6 +710,7 @@ class DnaChain:
       sequence: str,
       modifications: Sequence[tuple[str, int]],
       description: str | None = None,
+      conformer_restraints: bool = False,
   ):
     """Initializes a single strand DNA chain input.
 
@@ -698,6 +735,7 @@ class DnaChain:
     # Use hashable container for modifications.
     self._modifications = tuple(modifications)
     self._description = description
+    self._conformer_restraints = bool(conformer_restraints)
 
   @property
   def id(self) -> str:
@@ -718,6 +756,10 @@ class DnaChain:
   def description(self) -> str | None:
     return self._description
 
+  @property
+  def conformer_restraints(self) -> bool:
+    return self._conformer_restraints
+
   def __len__(self) -> int:
     return len(self._sequence)
 
@@ -729,11 +771,18 @@ class DnaChain:
         and self._sequence == other._sequence
         and self._modifications == other._modifications
         and self._description == other._description
+        and self._conformer_restraints == other._conformer_restraints
     )
 
   def __hash__(self) -> int:
     return hash(
-        (self._id, self._sequence, self._modifications, self._description)
+        (
+            self._id,
+            self._sequence,
+            self._modifications,
+            self._description,
+            self._conformer_restraints,
+        )
     )
 
   def modifications(self) -> Sequence[tuple[str, int]]:
@@ -741,7 +790,14 @@ class DnaChain:
 
   def hash_without_id(self) -> int:
     """Returns a hash ignoring the ID - useful for deduplication."""
-    return hash((self._sequence, self._modifications, self._description))
+    return hash(
+        (
+            self._sequence,
+            self._modifications,
+            self._description,
+            self._conformer_restraints,
+        )
+    )
 
   @classmethod
   def from_alphafoldserver_dict(
@@ -763,7 +819,14 @@ class DnaChain:
     """Constructs DnaChain from the AlphaFold JSON dict."""
     json_dict = json_dict['dna']
     _validate_keys(
-        json_dict.keys(), {'id', 'sequence', 'modifications', 'description'}
+        json_dict.keys(),
+        {
+            'id',
+            'sequence',
+            'modifications',
+            'description',
+            'conformer_restraints',
+        },
     )
     sequence = json_dict['sequence']
     modifications = [
@@ -775,6 +838,7 @@ class DnaChain:
         sequence=sequence,
         modifications=modifications,
         description=json_dict.get('description', None),
+        conformer_restraints=bool(json_dict.get('conformer_restraints', False)),
     )
 
   def to_dict(
@@ -791,6 +855,8 @@ class DnaChain:
     }
     if self._description is not None:
       contents['description'] = self._description
+    if self._conformer_restraints:
+      contents['conformer_restraints'] = True
     return {'dna': contents}
 
   def to_ccd_sequence(self) -> Sequence[str]:
@@ -823,6 +889,10 @@ class Ligand:
   ccd_ids: Sequence[str] | None = None
   smiles: str | None = None
   description: str | None = None
+  # Opt-in: a ligand applies conformer restraints only when it explicitly sets
+  # conformer_restraints:true (the per-ligand flag contract shared with
+  # boltz/protenix; absent flag -> no conformer restraints for that ligand).
+  conformer_restraints: bool = False
 
   def __post_init__(self):
     if (self.ccd_ids is None) == (self.smiles is None):
@@ -868,13 +938,16 @@ class Ligand:
     """Constructs Ligand from the AlphaFold JSON dict."""
     json_dict = json_dict['ligand']
     _validate_keys(
-        json_dict.keys(), {'id', 'ccdCodes', 'smiles', 'description'}
+        json_dict.keys(),
+        {'id', 'ccdCodes', 'smiles', 'description', 'conformer_restraints'},
     )
     if json_dict.get('ccdCodes') and json_dict.get('smiles'):
       raise ValueError(
           'Ligand cannot have both CCD code and SMILES set at the same time, '
           f'got CCD: {json_dict["ccdCodes"]} and SMILES: {json_dict["smiles"]}'
       )
+
+    conformer_restraints = bool(json_dict.get('conformer_restraints', False))
 
     if 'ccdCodes' in json_dict:
       ccd_codes = json_dict['ccdCodes']
@@ -887,12 +960,14 @@ class Ligand:
           id=seq_id or json_dict['id'],
           ccd_ids=ccd_codes,
           description=json_dict.get('description', None),
+          conformer_restraints=conformer_restraints,
       )
     elif 'smiles' in json_dict:
       return cls(
           id=seq_id or json_dict['id'],
           smiles=json_dict['smiles'],
           description=json_dict.get('description', None),
+          conformer_restraints=conformer_restraints,
       )
     else:
       raise ValueError(f'Unknown ligand type: {json_dict}')
@@ -908,6 +983,10 @@ class Ligand:
       contents['smiles'] = self.smiles
     if self.description is not None:
       contents['description'] = self.description
+    # Round-trip the RGI per-ligand opt-in (default False); emit only when enabled
+    # so the emitted *_data.json reloads with the same setting (from_dict reads it).
+    if self.conformer_restraints:
+      contents['conformer_restraints'] = True
     return {'ligand': contents}
 
 
@@ -975,6 +1054,7 @@ class Input:
   rng_seeds: Sequence[int]
   bonded_atom_pairs: Sequence[tuple[BondAtomId, BondAtomId]] | None = None
   user_ccd: str | None = None
+  restraints_config: dict | None = None
 
   def __post_init__(self):
     if not self.rng_seeds:
@@ -1135,6 +1215,7 @@ class Input:
             'bondedAtomPairs',
             'userCCD',
             'userCCDPath',
+            'restraints_config',
         },
     )
 
@@ -1260,12 +1341,22 @@ class Input:
     elif user_ccd_path:
       user_ccd = _read_file(pathlib.Path(user_ccd_path), json_path)
 
+    restraints_config = raw_json.get('restraints_config')
+    if restraints_config is not None:
+      from rgi_toolkit.config import resolve_restraints_config
+
+      restraints_config = resolve_restraints_config(
+          restraints_config,
+          base_dir=pathlib.Path(json_path).parent if json_path is not None else None,
+      )
+
     return cls(
         name=raw_json['name'],
         chains=chains,
         rng_seeds=[int(seed) for seed in raw_json['modelSeeds']],
         bonded_atom_pairs=bonded_atom_pairs,
         user_ccd=user_ccd,
+        restraints_config=restraints_config,
     )
 
   @classmethod
@@ -1464,18 +1555,20 @@ class Input:
       chain = deduped_chains[chain_content_hash]
       sequences.append(chain.to_dict(seq_id=ids if len(ids) > 1 else ids[0]))
 
-    alphafold_json = json.dumps(
-        {
-            'dialect': JSON_DIALECT,
-            'version': JSON_VERSION,
-            'name': self.name,
-            'sequences': sequences,
-            'modelSeeds': self.rng_seeds,
-            'bondedAtomPairs': self.bonded_atom_pairs,
-            'userCCD': self.user_ccd,
-        },
-        indent=2,
-    )
+    json_obj = {
+        'dialect': JSON_DIALECT,
+        'version': JSON_VERSION,
+        'name': self.name,
+        'sequences': sequences,
+        'modelSeeds': self.rng_seeds,
+        'bondedAtomPairs': self.bonded_atom_pairs,
+        'userCCD': self.user_ccd,
+    }
+    # Round-trip the RGI restraints config (from_json reads this key) so the emitted
+    # *_data.json reloads with restraints intact instead of silently unrestrained.
+    if self.restraints_config is not None:
+      json_obj['restraints_config'] = self.restraints_config
+    alphafold_json = json.dumps(json_obj, indent=2)
     # Remove newlines from the query/template indices arrays. We match the
     # queryIndices/templatesIndices with a non-capturing group. We then match
     # the entire region between the square brackets by looking for lines

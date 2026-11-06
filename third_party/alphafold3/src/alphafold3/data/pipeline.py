@@ -551,6 +551,7 @@ class DataPipeline:
         unpaired_msa=unpaired_msa,
         paired_msa=paired_msa,
         templates=templates,
+        conformer_restraints=chain.conformer_restraints,
     )
 
   def process_rna_chain(
@@ -582,6 +583,7 @@ class DataPipeline:
         modifications=chain.modifications,
         description=chain.description,
         unpaired_msa=unpaired_msa,
+        conformer_restraints=chain.conformer_restraints,
     )
 
   def process(self, fold_input: folding_input.Input) -> folding_input.Input:

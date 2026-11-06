@@ -506,8 +506,22 @@ class ModelRunner:
         jax.jit(forward_fn.apply, device=self._device), self.model_params
     )
 
+  @functools.cached_property
+  def _model_with_restraints(self) -> Callable:
+    """Pass numeric restraint state through JIT without capturing target values."""
+    @hk.transform
+    def forward_fn(batch, restraints):
+      return model.Model(self._model_config)(batch, restraints=restraints)
+
+    return functools.partial(
+        jax.jit(forward_fn.apply, device=self._device), self.model_params
+    )
+
   def run_inference(
-      self, featurised_example: features.BatchDict, rng_key: jnp.ndarray
+      self,
+      featurised_example: features.BatchDict,
+      rng_key: jnp.ndarray,
+      restraints=None,
   ) -> model.ModelResult:
     """Computes a forward pass of the model on a featurised example."""
     featurised_example = jax.device_put(
@@ -517,7 +531,12 @@ class ModelRunner:
         self._device,
     )
 
-    result = self._model(rng_key, featurised_example)
+    if restraints is not None and restraints.is_active():
+      result = self._model_with_restraints(
+          rng_key, featurised_example, restraints.as_pytree()
+      )
+    else:
+      result = self._model(rng_key, featurised_example)
     result = jax.tree.map(np.asarray, result)
     result = jax.tree.map(
         lambda x: x.astype(jnp.float32) if x.dtype == jnp.bfloat16 else x,
@@ -659,7 +678,16 @@ def predict_structure(
     print(f'Running model inference with seed {seed}...')
     inference_start_time = time.time()
     rng_key = jax.random.PRNGKey(seed)
-    result = model_runner.run_inference(example, rng_key)
+    restraints = None
+    if fold_input.restraints_config is not None:
+      from intellifold.rgi import build_restraints
+
+      restraints = build_restraints(fold_input, example)
+    result = model_runner.run_inference(example, rng_key, restraints=restraints)
+    if restraints is not None and restraints.is_active():
+      for sample_idx, positions in enumerate(result['diffusion_samples']['atom_positions']):
+        print(f'RGI diagnostics: seed={seed} sample={sample_idx}')
+        restraints.finalize(positions, model_runner._model_config.heads.diffusion.eval.steps)
     print(
         f'Running model inference with seed {seed} took'
         f' {time.time() - inference_start_time:.2f} seconds.'

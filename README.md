@@ -1,3 +1,8 @@
+see [RGI-toolkit](https://github.com/cddlab/rgi_toolkit) for more information.
+
+<details>
+<summary>Original README</summary>
+
 ![intellifold Cover](assets/intellifold-cover.png)
 
 # IntelliFold: A Controllable Foundation Model for General and Specialized Biomolecular Structure Prediction
@@ -178,3 +183,5 @@ This repo vendors the **Apache-2.0** AlphaFold 3 ([v3.0.3+](https://github.com/g
 ## 📬 Contact Us
 
 If you have any questions or are interested in collaboration, please feel free to contact us at contact@intfold.com.
+
+</details>
