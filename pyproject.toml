@@ -13,7 +13,7 @@ authors = [{ name = "IntelliGen-AI", email = "contact@intfold.com" }]
 keywords = ["protein structure", "alphafold3", "intellifold", "jax", "inference"]
 dependencies = [
     "jaxopt>=0.8.5",
-    "rgi-toolkit @ git+https://github.com/cddlab/rgi_toolkit.git@add_mol1_intellifold",
+    "rgi-toolkit @ git+https://github.com/cddlab/rgi_toolkit.git",
     "numpy",
     "zstandard",
     "ml_dtypes",
